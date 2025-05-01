@@ -4,17 +4,21 @@ import Task from '@/models/Task';
 import { verifyToken } from '@/middleware/auth';
 
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: { taskId: string } }
+  req: NextRequest,
+  context: { params: Promise<{ taskId: string }> }
 ) {
+  const { taskId } = await context.params;
+
   await dbConnect();
 
-  const user = verifyToken(request);
-  if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  const user = verifyToken(req);
+  if (!user) {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
 
-  const { title, description, completed } = await request.json();
+  const { title, description, completed } = await req.json();
 
-  const task = await Task.findOne({ _id: params.taskId, userId: user.userId });
+  const task = await Task.findOne({ _id: taskId, userId: user.userId });
 
   if (!task) {
     return NextResponse.json({ message: 'Task not found or not owned by user' }, { status: 404 });

@@ -2,7 +2,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import { NextApiResponse } from 'next';
 import { NextResponse } from 'next/server';
 
-export const dynamic = 'force-dynamic'; // required for App Router
+export const dynamic = 'force-dynamic'; 
 
 let io: SocketIOServer | undefined;
 
