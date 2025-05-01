@@ -6,7 +6,7 @@ export function useSocket(): Socket | null {
 
   useEffect(() => {
     if (!socketRef.current) {
-      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000';
+      const socketUrl =  'https://backend-crud-project-2bev-lrygy5w2o-saqibs-projects-20f58ce3.vercel.app/';
       socketRef.current = io(socketUrl);
 
       socketRef.current.on('connect', () => {
