@@ -1,16 +1,28 @@
 import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-export function useSocket() {
+export function useSocket(): Socket | null {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
     if (!socketRef.current) {
-      socketRef.current = io('http://localhost:3000'); // adjust if deployed
+      const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000';
+      socketRef.current = io(socketUrl);
+
+      socketRef.current.on('connect', () => {
+        console.log('✅ Socket connected:', socketRef.current?.id);
+      });
+      
+      socketRef.current.on('connect_error', (err) => {
+        console.error('❌ Socket connection error:', err.message);
+      });
+      
     }
 
     return () => {
-      socketRef.current?.disconnect();
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
     };
   }, []);
 
