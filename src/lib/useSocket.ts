@@ -1,30 +1,33 @@
-import { useEffect, useRef } from 'react';
-import { io, Socket } from 'socket.io-client';
+// src/hooks/useSocket.ts
+import { useEffect } from 'react';
+import socket from './socket';
 
-export function useSocket(): Socket | null {
-  const socketRef = useRef<Socket | null>(null);
-
+export function useSocket() {
   useEffect(() => {
-    if (!socketRef.current) {
-      const socketUrl =  'https://backend-crud-project-2bev-lrygy5w2o-saqibs-projects-20f58ce3.vercel.app/';
-      socketRef.current = io(socketUrl);
-
-      socketRef.current.on('connect', () => {
-        console.log('✅ Socket connected:', socketRef.current?.id);
-      });
-      
-      socketRef.current.on('connect_error', (err) => {
-        console.error('❌ Socket connection error:', err.message);
-      });
-      
+    if (!socket.connected) {
+      socket.connect();
+      console.log('🌐 Connecting to Socket.IO...');
     }
 
+    socket.on('connect', () => {
+      console.log('✅ Socket connected:', socket.id);
+    });
+
+    socket.on('disconnect', () => {
+      console.warn('🔌 Socket disconnected');
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error('❌ Socket connection error:', err);
+    });
+
     return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-      }
+      // You can remove listeners but don’t disconnect globally
+      socket.off('connect');
+      socket.off('disconnect');
+      socket.off('connect_error');
     };
   }, []);
 
-  return socketRef.current;
+  return socket;
 }

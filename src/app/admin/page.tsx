@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSocket } from '@/lib/useSocket';
 import { useAuthRedirect } from '@/lib/useAuthRedirect';
+import { toast } from 'react-toastify';
 
 interface Task {
   _id: string;
@@ -46,14 +47,21 @@ export default function AdminDashboard() {
     if (!socket) return;
 
     socket.on('newTask', (task: Task) => {
-      console.log('🆕 New Task:', task);
-      setTasks((prev) => [task, ...prev]);
+      console.log('🆕 New Task received:', task);
+      toast.info(`🆕 New Task: ${task.title}`);
+      setTasks((prev) => {
+        const updated = [task, ...prev];
+        console.log('📦 Updated task list:', updated);
+        return updated;
+      });
     });
 
     socket.on('taskUpdated', (updatedTask: Task) => {
       console.log('🔁 Task Updated:', updatedTask);
       setTasks((prev) =>
-        prev.map((task) => (task._id === updatedTask._id ? updatedTask : task))
+        prev.map((task) =>
+          task._id === updatedTask._id ? updatedTask : task
+        )
       );
     });
 
@@ -64,32 +72,55 @@ export default function AdminDashboard() {
   }, [socket]);
 
   return (
-    <div className="mt-10">
-    <h2 className="text-lg font-bold mb-4 text-red-500">⏰ Overdue Tasks (24+ hrs)</h2>
-    <ul className="space-y-4">
-      {overdueTasks.map((task) => (
-        <li
-          key={task._id}
-          className="bg-white dark:bg-red-100 text-black dark:text-gray-800 p-4 rounded-lg shadow-md border-l-4 border-red-500"
-        >
-          <div className="flex justify-between items-center">
-            <h3 className="text-base font-semibold">{task.title}</h3>
-            <span className="text-sm text-red-600 font-medium">
-              {task.completed ? '✅ Completed' : '❗ Pending'}
-            </span>
-          </div>
-          <p className="text-sm text-gray-700 mt-1">{task.description}</p>
-          <p className="text-xs text-gray-500 mt-2">
-            <strong>Created:</strong>{' '}
-            {new Date(task.createdAt).toLocaleString(undefined, {
-              dateStyle: 'medium',
-              timeStyle: 'short',
-            })}
-          </p>
-        </li>
-      ))}
-    </ul>
-  </div>
-  
+    <div className="p-6 space-y-8">
+      <h1 className="text-2xl font-bold text-center mb-6 text-blue-600">
+        👑 Admin Dashboard – Live Task Feed
+      </h1>
+
+      <section>
+        <h2 className="text-lg font-bold mb-4 text-blue-500">📡 All Tasks (Live)</h2>
+        <ul className="space-y-4 mb-10">
+          {tasks.map((task) => (
+            <li
+              key={task._id}
+              className="bg-gray-100 p-4 rounded-md shadow border-l-4 border-blue-500"
+            >
+              <div className="flex justify-between">
+                <strong>{task.title}</strong>
+                <span>{task.completed ? '✅ Completed' : '⏳ Pending'}</span>
+              </div>
+              <p className="text-sm">{task.description}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-bold mb-4 text-red-500">⏰ Overdue Tasks (24+ hrs)</h2>
+        <ul className="space-y-4">
+          {overdueTasks.map((task) => (
+            <li
+              key={task._id}
+              className="bg-white dark:bg-red-100 text-black dark:text-gray-800 p-4 rounded-lg shadow-md border-l-4 border-red-500"
+            >
+              <div className="flex justify-between items-center">
+                <h3 className="text-base font-semibold">{task.title}</h3>
+                <span className="text-sm text-red-600 font-medium">
+                  {task.completed ? '✅ Completed' : '❗ Pending'}
+                </span>
+              </div>
+              <p className="text-sm text-gray-700 mt-1">{task.description}</p>
+              <p className="text-xs text-gray-500 mt-2">
+                <strong>Created:</strong>{' '}
+                {new Date(task.createdAt).toLocaleString(undefined, {
+                  dateStyle: 'medium',
+                  timeStyle: 'short',
+                })}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
   );
 }

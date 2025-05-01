@@ -1,28 +1,10 @@
-import { Server as IOServer } from 'socket.io';
-import { Server as HTTPServer } from 'http';
+// src/lib/socket.ts
+import { io, Socket } from 'socket.io-client';
 
-let io: IOServer | null = null;
+const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000';
 
-export function initSocket(server: HTTPServer) {
-  if (!io) {
-    io = new IOServer(server, {
-      cors: {
-        origin: '*',
-        methods: ['GET', 'POST'],
-      },
-    });
+const socket: Socket = io(socketUrl, {
+  autoConnect: false, // so you control when it connects
+});
 
-    io.on('connection', (socket) => {
-      console.log('Socket connected:', socket.id);
-    });
-  }
-
-  return io;
-}
-
-export function getIO(): IOServer {
-  if (!io) {
-    throw new Error('Socket.io not initialized');
-  }
-  return io;
-}
+export default socket;

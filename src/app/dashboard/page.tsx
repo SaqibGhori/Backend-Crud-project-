@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuthRedirect } from '@/lib/useAuthRedirect';
+import { useSocket } from '@/lib/useSocket';
 
 interface Task {
   _id: string;
@@ -11,10 +12,11 @@ interface Task {
 }
 
 export default function DashboardPage() {
-    useAuthRedirect(); 
+  useAuthRedirect();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const socket = useSocket()
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
@@ -49,6 +51,11 @@ export default function DashboardPage() {
     const data = await res.json();
 
     if (res.ok) {
+
+      if (!socket) return;
+
+      socket.emit('newTask', data.task);
+
       setTasks((prev) => [data.task, ...prev]);
       setTitle('');
       setDescription('');

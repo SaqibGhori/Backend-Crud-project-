@@ -30,10 +30,5 @@ export async function POST(request: NextRequest) {
     completed: false,
   });
   
-  const io: Server = (global as any).io;
-  if (io) {
-    io.emit('newTask', task);
-  }
-
   return NextResponse.json({ message: 'Task created', task });
 }
